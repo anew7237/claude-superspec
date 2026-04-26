@@ -1,7 +1,7 @@
-﻿# SuperSpec - Claude Code 環境下使用 Superpowers + Spec-Kit 整合開發流程(修正版 v2026.04.25s)
-# (`!!!僅適用於 Spec-Kit@v0.8.0 以下版本!!!`)
+﻿# SuperSpec - Claude Code 環境下使用 Superpowers + Spec-Kit 整合開發流程(修正版 v2026.04.26a)
+# (`!!!僅適用於 Spec-Kit@v0.8.1 以上版本!!!`)
 
-> **重要**: [Spec-Kit@v0.8.1 (2026/04/25 Release)](https://github.com/github/spec-kit/releases/tag/v0.8.1),將 斜線指令 `/speckit.*` 改為 `/speckit-*` (**本文章不再適用與維護**)
+> **重要**: [Spec-Kit@v0.8.1 (2026/04/25 Release)](https://github.com/github/spec-kit/releases/tag/v0.8.1),將 斜線指令 `/speckit.*` 改為 `/speckit-*`
 >
 > 整理自[忍者工坊「用 superpowers 與 spec-kit 打造 AI 輔助開發流程」](https://nijialin.com/2026/02/18/superpowers-vs-spec-kit/)一文,並補充 superpowers / spec-kit 官方文件中的延伸用法。
 
@@ -14,7 +14,7 @@
 | 🔵 **加料** | 忍者工坊原文未明確提及 | 從 Superpowers / Spec-Kit 官方文件補的 |
 | 【Shell端】| powsershell / bash / zsh | Shell端 依不同 `OS環境`,指令可能有所不同 |
 | 【CC原生】| Claude Code 內建指令 / 機制 | 與兩個框架無關 |
-| 【SK指令】| Spec-Kit 斜線指令 | 以 `/speckit.` 開頭(注意是點號) |
+| 【SK指令】| Spec-Kit 斜線指令 | 以 `/speckit-` 開頭(注意不是點號, 是 **`-`**) |
 | 【SK檔案】| Spec-Kit 產生/管理的檔案 | 由 Spec-Kit 指令自動產生與維護 |
 | 【SP技能】| Superpowers Skill | 由模型依情境**自動觸發** (skills 本身**沒有**同名斜線指令) |
 | 【SP範本】| Superpowers Skill 提示詞範本 | 由【SP技能】`subagent-driven-development` 內部派發使用 |
@@ -29,14 +29,14 @@
 
 | 步驟 | 標籤 | 動作 | 說明 |
 |---|---|---|---|
-| 0.1 | 【Shell端】 | `uvx --from git+https://github.com/github/spec-kit.git@v0.8.0 specify init <project> --integration claude` | 為專案裝上指定tag版本的 **Spec-Kit** |
+| 0.1 | 【Shell端】 | `uvx --from git+https://github.com/github/spec-kit.git@v0.8.1 specify init <project> --integration claude` | 為專案裝上指定tag版本的 **Spec-Kit** |
 | 0.2 | 【Shell端】 | `cd <project> && git config user.name '<name>' && git config user.email '<email>' && echo '.claude/' > .gitignore` | 專案初始化 **Git** |
 | 0.3 | 【CC原生】| `/plugin marketplace add obra/superpowers-marketplace` (Superpowers 添加市集) | **僅需執行一次** |
 | 0.4 | 【CC原生】| `/plugin install superpowers@superpowers-marketplace` (Superpowers 全域安裝) | **僅需執行一次** |
 
-> 🔵 **建議**:`specify init` 請釘版本 tag(例如 `@v0.8.0`),不然會拉 `main`,行為可能隨上游變動。官方 README 推薦這麼做。
+> 🔵 **建議**:`specify init` 請釘版本 tag(例如 `@v0.8.1`),不然會拉 `main`,行為可能隨上游變動。官方 README 推薦這麼做。
 >
-> 跑完 `specify init` 後,`/speckit.*` 系列指令會被寫進 `.claude/commands/`,Claude Code 重啟後 【SK指令】 就能使用。
+> 跑完 `specify init` 後,`/speckit-*` 系列指令會被寫進 `.claude/commands/`,Claude Code 重啟後 【SK指令】 就能使用。
 
 ### 產生/涉及的檔案
 
@@ -86,9 +86,9 @@ CLAUDE.md       ← **專案層級記憶**
 
 | 步驟 | 標籤 | 動作 | 說明 |
 |---|---|---|---|
-| 2.0 | 【SK指令】 | `/speckit.constitution` →【SK檔案】`.specify/memory/constitution.md` | 設定專案治理原則=立憲(整個專案只做一次,後續可更新) |
+| 2.0 | 【SK指令】 | `/speckit-constitution` →【SK檔案】`.specify/memory/constitution.md` | 設定專案治理原則=立憲(整個專案只做一次,後續可更新) |
 
-> 若治理原則需要調整,再單獨重跑 `/speckit.constitution` 即可(不需要每次新功能都跑)。
+> 若治理原則需要調整,再單獨重跑 `/speckit-constitution` 即可(不需要每次新功能都跑)。
 
 ### 2.1 ~ 2.6 每個功能的規格化流程(每次新需求都跑)
 
@@ -96,14 +96,14 @@ CLAUDE.md       ← **專案層級記憶**
 
 | 步驟 | 標籤 | 動作 | 說明 |
 |---|---|---|---|
-| 2.1 | 【SK指令】 | `/speckit.specify` →【SK檔案】`spec.md` | 把 階段 1 設計內容貼進去,產出規格文件 |
-| 2.2 | 【SK指令】 | `/speckit.clarify` (官方列為 optional 🔵) | 結構化澄清模糊處,記錄到 Clarifications 段落 |
-| 2.3 | 【SK指令】 | `/speckit.plan` →【SK檔案】`plan.md` | 生成技術計畫(架構、技術棧、依賴) |
-| 2.4 | 【SK指令】 | `/speckit.tasks`→【SK檔案】`tasks.md` | 把 plan 拆成可執行的任務清單 |
-| 2.5 | 【SK指令】 | `/speckit.analyze` (官方列為 optional 🔵) | 一致性檢查(spec / plan / tasks 對得上嗎) |
+| 2.1 | 【SK指令】 | `/speckit-specify` →【SK檔案】`spec.md` | 把 階段 1 設計內容貼進去,產出規格文件 |
+| 2.2 | 【SK指令】 | `/speckit-clarify` (官方列為 optional 🔵) | 結構化澄清模糊處,記錄到 Clarifications 段落 |
+| 2.3 | 【SK指令】 | `/speckit-plan` →【SK檔案】`plan.md` | 生成技術計畫(架構、技術棧、依賴) |
+| 2.4 | 【SK指令】 | `/speckit-tasks`→【SK檔案】`tasks.md` | 把 plan 拆成可執行的任務清單 |
+| 2.5 | 【SK指令】 | `/speckit-analyze` (官方列為 optional 🔵) | 一致性檢查(spec / plan / tasks 對得上嗎) |
 | 2.6 | 【CC原生】 | `/clear` (清空對話,進下個 session 🔵) | 積極清理上下文 |
 
-> **關鍵**:這裡刻意**不跑** `/speckit.implement`,實作交給下個階段的 Superpowers。這就是組合的精髓——Spec-Kit 負責規格, Superpowers 負責執行紀律。
+> **關鍵**:這裡刻意**不跑** `/speckit-implement`,實作交給下個階段的 Superpowers。這就是組合的精髓——Spec-Kit 負責規格, Superpowers 負責執行紀律。
 >
 > 本流程選擇以 Superpowers 的 subagent + TDD 取而代之,屬於**自覺的取捨**(trade-off):放棄 Spec-Kit 單一工具的流暢,換 Superpowers 在執行紀律上的強項。
 
@@ -112,19 +112,19 @@ CLAUDE.md       ← **專案層級記憶**
 ```
 .specify/
 ├── memory/
-│   └── constitution.md          ← /speckit.constitution
+│   └── constitution.md          ← /speckit-constitution
 └── (每個 feature 一個資料夾)
 specs/
-└── <NNN-feature-name>/          ← /speckit.specify (每個 feature 一個資料夾, NNN 編號自動加1)
-    ├── plan.md                  ← /speckit.plan
-    ├── research.md              ← /speckit.plan
-    ├── data-model.md            ← /speckit.plan
-    ├── quickstart.md            ← /speckit.plan
-    ├── contracts/               ← /speckit.plan
-    ├── checklists/              ← /speckit.checklist
-    ├── tasks.md                 ← /speckit.tasks (階段 3.1 execute-plan 的執行輸入)
-    └── spec.md                  ← /speckit.specify (階段 3.2 Spec compliance reviewer 審查的真相來源)
-                                (└ 含 /speckit.clarify 記錄的 Clarifications 段落)
+└── <NNN-feature-name>/          ← /speckit-specify (每個 feature 一個資料夾, NNN 編號自動加1)
+    ├── plan.md                  ← /speckit-plan
+    ├── research.md              ← /speckit-plan
+    ├── data-model.md            ← /speckit-plan
+    ├── quickstart.md            ← /speckit-plan
+    ├── contracts/               ← /speckit-plan
+    ├── checklists/              ← /speckit-checklist
+    ├── tasks.md                 ← /speckit-tasks (階段 3.1 execute-plan 的執行輸入)
+    └── spec.md                  ← /speckit-specify (階段 3.2 Spec compliance reviewer 審查的真相來源)
+                                (└ 含 /speckit-clarify 記錄的 Clarifications 段落)
 ```
 
 ---
@@ -189,8 +189,8 @@ specs/
 
 ```bash
 # === 階段 0:一次性設定 ===
-# Shell端(釘 tag 建議,最大版本止於 v0.8.0):
-$ uvx --from git+https://github.com/github/spec-kit.git@v0.8.0 specify init my-app --integration claude
+# Shell端(釘 tag 建議,最小版本至少 v0.8.1):
+$ uvx --from git+https://github.com/github/spec-kit.git@v0.8.1 specify init my-app --integration claude
 
 # Claude Code 端(兩行都是在 Claude Code 裡輸入,不是 shell):
 你:「/plugin marketplace add obra/superpowers-marketplace」   # 【CC原生】
@@ -206,14 +206,14 @@ $ uvx --from git+https://github.com/github/spec-kit.git@v0.8.0 specify init my-a
 # === 階段 2:Spec-Kit 文件化 ===
 
 # 2.0 前置(一次性,已做過請跳過)
-你:「/speckit.constitution」                # 【SK指令】(整個專案只跑一次)
+你:「/speckit-constitution」                # 【SK指令】(整個專案只跑一次)
 
 # 2.1 每個功能的規格化流程
-你:「/speckit.specify 讀取<brainstorming產出的.md檔>」 # 【SK指令】
-你:「/speckit.clarify」                    # 【SK指令】🔵(官方 optional)
-你:「/speckit.plan <以上面spec寫成plan>」  # 【SK指令】(/speckit.clarify 後會引導)
-你:「/speckit.tasks」                      # 【SK指令】
-你:「/speckit.analyze」                    # 【SK指令】🔵(官方 optional)
+你:「/speckit-specify 讀取<brainstorming產出的.md檔>」 # 【SK指令】
+你:「/speckit-clarify」                    # 【SK指令】🔵(官方 optional)
+你:「/speckit-plan <以上面spec寫成plan>」  # 【SK指令】(/speckit-clarify 後會引導)
+你:「/speckit-tasks」                      # 【SK指令】
+你:「/speckit-analyze」                    # 【SK指令】🔵(官方 optional)
 你:「/clear」                              # 【CC原生】🔵(清理上下文)
 
 (git commit plan 所產生的檔案,**也可不commit**)
@@ -257,7 +257,7 @@ $ uvx --from git+https://github.com/github/spec-kit.git@v0.8.0 specify init my-a
 |---|---|
 | 「兩個工具用下來,大概都是 1.5 小時就碰到 rate limit」 | 不可避免,只能拆 session |
 | 作者的「無腦用法」:**「用一個 session 想清楚、把文件搞定,碰到 rate limit 就等,下個 session 再繼續執行」** | 把 rate limit 當自然的切換點,用 Spec-Kit 的文件當 session 間的交接介面 |
-| 任務切越小、單次對話越短,越不容易做到一半斷掉 | 階段 2 的 `/speckit.tasks` 切到夠細,階段 3 才能小步快跑 |
+| 任務切越小、單次對話越短,越不容易做到一半斷掉 | 階段 2 的 `/speckit-tasks` 切到夠細,階段 3 才能小步快跑 |
 
 > 🔵 **本文主動策略**:在每個階段結束都 `/clear`(而不只是撞 rate limit 才換 session),讓下個階段的 context 絕對乾淨。這是本文作者的建議,不是忍者工坊原文的規定——用不用都合理,主要看你的節奏。
 >
