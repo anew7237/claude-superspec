@@ -283,12 +283,94 @@ local path="$1/$2"      # ✅ 注意 = 兩側不能有空白
 
 ---
 
+## 本次 session 演化(`20260428a` → `20260428d`)
+
+> 對應 workflow 文件同步升至 `v2026.04.28c`(`.docs/superspec-workflow-SKv0.8.1.md`):新增階段 0.1 `specify extension add git` 步驟、檔案結構補上 `extensions/` 與 `extensions.yml`。
+
+### 新增 1:`install_speckit_extension` 函式
+
+把「裝 Spec-Kit extension」抽成參數化函式,放在 helper 區(`ask_with_default` 之後):
+
+```bash
+install_speckit_extension() {
+  local ext="$1"
+  [ -d "$TARGET_DIR/$SK_PROJECT/extensions/$ext/" ] && return 0
+  (
+    cd "$TARGET_DIR/$SK_PROJECT/"
+    uvx --from "git+https://github.com/github/spec-kit.git@${SK_VERSION}" \
+      specify extension add "$ext"
+  )
+  echo "✅ Spec-Kit extension:$ext 已安裝"
+}
+```
+
+設計重點:
+- **subshell `( ... )` 包 `cd`** — 函式內 cwd 不會洩漏到呼叫端,免去尾端 `cd "$TARGET_DIR"` 復位
+- **idempotent guard** — `[ -d extensions/$ext/ ]` 命中直接 `return 0`,重跑安全
+- **參數化 `ext`** — 之後加新 extension 直接套
+
+### 新增 2:`commit_speckit_init` 函式
+
+把 follow-up commit 區塊(原本兩處重複)抽成函式,並順便補 `.gitignore`:
+
+```bash
+commit_speckit_init() {
+  (
+    cd "$TARGET_DIR/$SK_PROJECT"
+    grep -qxF '.specify/extensions/.cache/' .gitignore 2>/dev/null \
+      || echo '.specify/extensions/.cache/' >> .gitignore
+    git add .gitignore .specify .claude/skills/speckit* CLAUDE.md
+    git diff --cached --quiet || git commit -m "Add Spec-Kit presets / extensions / skills" --quiet
+  )
+  echo "✅ presets / extensions / skills 已補入 git"
+}
+```
+
+### 為什麼加 `.gitignore` 處理
+
+`specify extension add git` 會在 `.specify/extensions/` 底下建立 `.cache/`(下載的暫存檔),**spec-kit 不會自動 ignore**。
+
+時序問題:
+1. `specify init` → 建 `.specify/`(此時還沒 extensions/)
+2. `install_speckit_extension git` → 建出 `.specify/extensions/git/` **與 `.specify/extensions/.cache/`**
+3. 若直接 `git add .specify` → `.cache/` 被 stage → 進 commit ❌
+
+解法:`commit_speckit_init` 內 `git add` 之前先 append `.gitignore` 規則(`grep -qxF` 守護避免重複),並把 `.gitignore` 也 stage,讓首次 commit 就帶這條規則。
+
+`grep -qxF` 三個 flag 缺一不可:
+- `-q` 安靜模式
+- `-x` **整行**匹配,避免子字串誤判
+- `-F` **固定字串**,避免 `.` 被當 regex
+
+注意:`.gitignore` 只對 untracked 檔生效。若 `.cache/` 已被歷史 commit 追蹤過,光加規則沒用,要先 `git rm -r --cached .specify/extensions/.cache/`。本腳本時序裡是全新 init 第一次 commit,沒這個問題。
+
+### 主分派改造:`install_speckit_extension git` 移入分支
+
+從**檔尾單一呼叫**移入**三個 init 分支內部**:
+
+| 分支 | 條件 | 新增動作 |
+|---|---|---|
+| 父層新建 | 目錄不存在 | `install_speckit_extension git` + `commit_speckit_init` |
+| `--here --no-git` | 已有 `.git/` 但無 `.specify/` | 同上 |
+| `--force` | 都不存在 + 使用者同意 | 只 `install_speckit_extension git`(不自動 commit,留給使用者) |
+
+語意更清楚:每個分支各自負責「init OK 才裝 ext」,失敗的 init 不會走到 ext 安裝。
+
+### 移除
+
+- 檔尾的 `install_speckit_extension git`(已下放至各分支)
+- 檔尾的 `cd "$TARGET_DIR/"`(subshell 包好後不再需要;且即便保留,`bash xxx.sh` 子行程結束 cwd 也回不到呼叫端 — 只 `source` 才有作用)
+- 兩處重複的 6 行 follow-up commit subshell(統一收進 `commit_speckit_init`)
+
+---
+
 ## 後續 TODO(若要 ship 為 v1)
 
-1. L2 timestamp 升至 `###ANEW:20260428a`(會話收尾日期)
+1. ~~L2 timestamp 升至 `###ANEW:20260428a`~~ → 本 session 已迭代至 `###ANEW:20260428d`
 2. (可選)抽 `SK_VERSION_MIN` 常數讓三處硬編集中(使用者已決定不做)
 3. (可選)L65 `.specify/` 升級分支從「只印提示」改為「自動跑 `git checkout -b` + spec-kit + diff」 — 等 spec-kit 上游真的提供 upgrade 指令再考慮
 4. 把 `.env.spec-kit` 加進 `.gitignore`(若使用者後續想恢復環境變數模式)
+5. (可選)`--force` 分支也跑 `commit_speckit_init` — 目前刻意不跑,讓強制覆寫場景由使用者自己決定何時 commit;若希望一致行為再考慮
 
 ---
 

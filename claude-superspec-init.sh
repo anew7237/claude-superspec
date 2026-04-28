@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-###ANEW:20260428a
+###ANEW:20260428d
 
 set -euo pipefail
 
@@ -44,6 +44,28 @@ ask_with_default() {
     fi
     out="$reply"
   fi
+}
+
+install_speckit_extension() {
+  local ext="$1"
+  [ -d "$TARGET_DIR/$SK_PROJECT/extensions/$ext/" ] && return 0
+  (
+    cd "$TARGET_DIR/$SK_PROJECT/"
+    uvx --from "git+https://github.com/github/spec-kit.git@${SK_VERSION}" \
+      specify extension add "$ext"
+  )
+  echo "✅ Spec-Kit extension:$ext 已安裝"
+}
+
+commit_speckit_init() {
+  (
+    cd "$TARGET_DIR/$SK_PROJECT"
+    grep -qxF '.specify/extensions/.cache/' .gitignore 2>/dev/null \
+      || echo '.specify/extensions/.cache/' >> .gitignore
+    git add .gitignore .specify .claude/skills/speckit* CLAUDE.md
+    git diff --cached --quiet || git commit -m "Add Spec-Kit presets / extensions / skills" --quiet
+  )
+  echo "✅ presets / extensions / skills 已補入 git"
 }
 
 echo "=== Spec-Kit project initializer ==="
@@ -101,12 +123,8 @@ if [ ! -d "$TARGET_DIR/$SK_PROJECT/" ] ; then
   uvx --from "git+https://github.com/github/spec-kit.git@${SK_VERSION}" \
     specify init $SK_PROJECT --integration claude
   echo "✅ '$SK_PROJECT' 初始化完成[父層目錄]($TARGET_DIR/$SK_PROJECT)"
-  (
-    cd "$TARGET_DIR/$SK_PROJECT"
-    git add .specify .claude/skills/speckit* CLAUDE.md
-    git diff --cached --quiet || git commit -m "Add Spec-Kit extensions and presets" --quiet
-  )
-  echo "✅ extensions / presets 已補入 git"
+  install_speckit_extension git
+  commit_speckit_init
 elif [ -d "$TARGET_DIR/$SK_PROJECT/.specify/" ] ; then
   {
     echo "✗ 已略過,'$SK_PROJECT' 之前已初始化"
@@ -132,12 +150,8 @@ elif [ -d "$TARGET_DIR/$SK_PROJECT/.git/" ] ; then
   echo "y" | uvx --from "git+https://github.com/github/spec-kit.git@${SK_VERSION}" \
     specify init --here --no-git --integration claude
   echo "✅ '$SK_PROJECT' 初始化完成[專案目錄]($TARGET_DIR/$SK_PROJECT)"
-  (
-    cd "$TARGET_DIR/$SK_PROJECT"
-    git add .specify .claude/skills/speckit* CLAUDE.md
-    git diff --cached --quiet || git commit -m "Add Spec-Kit extensions and presets" --quiet
-  )
-  echo "✅ extensions / presets 已補入 git"
+  install_speckit_extension git
+  commit_speckit_init
 else # .specify/ 與 .git/ 都不存在時
   echo "ℹ '$SK_PROJECT' 尚未初始化!!! 是否使用 specify init --force"
   echo "⚠ --force 會覆蓋目錄內既有檔且無法復原,請先[備份]重要內容"
@@ -147,6 +161,7 @@ else # .specify/ 與 .git/ 都不存在時
     uvx --from "git+https://github.com/github/spec-kit.git@${SK_VERSION}" \
       specify init $SK_PROJECT --force --integration claude
     echo "ℹ '$SK_PROJECT' 初始化完成[父層強制]($TARGET_DIR/$SK_PROJECT)"
+    install_speckit_extension git
   else
     echo "✗ 已略過,'$SK_PROJECT' 未變更" >&2
   fi
