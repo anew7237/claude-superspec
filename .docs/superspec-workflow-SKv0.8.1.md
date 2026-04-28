@@ -1,4 +1,4 @@
-﻿# SuperSpec - Claude Code 環境下使用 Superpowers + Spec-Kit 整合開發流程(修正版 v2026.04.26a)
+﻿# SuperSpec - Claude Code 環境下使用 Superpowers + Spec-Kit 整合開發流程(修正版 v2026.04.28a)
 # (`!!!僅適用於 Spec-Kit@v0.8.1 以上版本!!!`)
 
 > **重要**: [Spec-Kit@v0.8.1 (2026/04/25 Release)](https://github.com/github/spec-kit/releases/tag/v0.8.1),將 斜線指令 `/speckit.*` 改為 `/speckit-*`
@@ -42,11 +42,9 @@
 
 ```
 CLAUDE.md       ← **專案層級記憶**
-.specify/       ← (v0.7.3)
+.specify/       ← (v0.8.1)
 ├── memory/
 │  └── constitution.md       ← **專案治理原則**
-├── extensions/               ← 擴充套件目錄(未展開)
-├── extensions.yml            ← 擴充套件
 ├── init-options.json
 ├── integration.json
 ├── integrations/
@@ -220,8 +218,8 @@ $ uvx --from git+https://github.com/github/spec-kit.git@v0.8.1 specify init my-a
 
 # === 階段 3:Superpowers Execute-Plan ===
 
-# 3.0 前置 🔵(用自然語言觸發兩個技能,沒有對應的斜線指令)
-你:「以下提到 <NNN-feature-name> 即是當前 worktree 分支名」
+# 3.0 前置 🔵(<NNN-feature-name> 是由 Spec-Kit 開的分支 )
+你:「以下提到 <NNN-feature-name> 即是當前[git branch]名稱」
 你:「superpowers:verification-before-completion」
     └─【SP技能】 verification-before-completion (自動讀取 specs/<NNN-feature-name>/)
 
