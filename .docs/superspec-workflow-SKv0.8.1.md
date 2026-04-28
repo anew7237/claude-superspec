@@ -1,4 +1,4 @@
-﻿# SuperSpec - Claude Code 環境下使用 Superpowers + Spec-Kit 整合開發流程(修正版 v2026.04.28a)
+﻿# SuperSpec - Claude Code 環境下使用 Superpowers + Spec-Kit 整合開發流程(修正版 v2026.04.28c)
 # (`!!!僅適用於 Spec-Kit@v0.8.1 以上版本!!!`)
 
 > **重要**: [Spec-Kit@v0.8.1 (2026/04/25 Release)](https://github.com/github/spec-kit/releases/tag/v0.8.1),將 斜線指令 `/speckit.*` 改為 `/speckit-*`
@@ -29,7 +29,8 @@
 
 | 步驟 | 標籤 | 動作 | 說明 |
 |---|---|---|---|
-| 0.1 | 【Shell端】 | `uvx --from git+https://github.com/github/spec-kit.git@v0.8.1 specify init <project> --integration claude` | 為專案裝上指定tag版本的 **Spec-Kit** |
+| 0.0 | 【Shell端】 | `uvx --from git+https://github.com/github/spec-kit.git@v0.8.1 specify init <project> --integration claude` | 為專案裝上指定tag版本的 **Spec-Kit** |
+| 0.1 | 【Shell端】 | `uvx --from git+https://github.com/github/spec-kit.git@v0.8.1 specify extension add git` | 為專案裝上 **Spec-Kit** Extension |
 | 0.2 | 【Shell端】 | `cd <project> && git config user.name '<name>' && git config user.email '<email>' && echo '.claude/' > .gitignore` | 專案初始化 **Git** |
 | 0.3 | 【CC原生】| `/plugin marketplace add obra/superpowers-marketplace` (Superpowers 添加市集) | **僅需執行一次** |
 | 0.4 | 【CC原生】| `/plugin install superpowers@superpowers-marketplace` (Superpowers 全域安裝) | **僅需執行一次** |
@@ -45,6 +46,8 @@ CLAUDE.md       ← **專案層級記憶**
 .specify/       ← (v0.8.1)
 ├── memory/
 │  └── constitution.md       ← **專案治理原則**
+├── extensions/               ← 擴充套件目錄(未展開)
+├── extensions.yml            ← 擴充套件(要裝 git extension)
 ├── init-options.json
 ├── integration.json
 ├── integrations/
