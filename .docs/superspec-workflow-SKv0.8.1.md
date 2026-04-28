@@ -1,4 +1,4 @@
-﻿# SuperSpec - Claude Code 環境下使用 Superpowers + Spec-Kit 整合開發流程(修正版 v2026.04.28c)
+﻿# SuperSpec - Claude Code 環境下使用 Superpowers + Spec-Kit 整合開發流程(修正版 v2026.04.28e)
 # (`!!!僅適用於 Spec-Kit@v0.8.1 以上版本!!!`)
 
 > **重要**: [Spec-Kit@v0.8.1 (2026/04/25 Release)](https://github.com/github/spec-kit/releases/tag/v0.8.1),將 斜線指令 `/speckit.*` 改為 `/speckit-*`
@@ -37,6 +37,11 @@
 
 > 🔵 **建議**:`specify init` 請釘版本 tag(例如 `@v0.8.1`),不然會拉 `main`,行為可能隨上游變動。官方 README 推薦這麼做。
 >
+> 🔵 **快速**:步驟 0.0~0.2 使用本專案撰寫的腳本 [claude-superspec-init.sh](https://github.com/anew7237/claude-superspec/blob/main/claude-superspec-init.sh) 進行安裝
+> ```
+> bash <(curl -fsSL https://raw.githubusercontent.com/anew7237/claude-superspec/main/claude-superspec-init.sh)
+> # 若無 curl, 可改用 wget -qO- https://...
+> ```
 > 跑完 `specify init` 後,`/speckit-*` 系列指令會被寫進 `.claude/commands/`,Claude Code 重啟後 【SK指令】 就能使用。
 
 ### 產生/涉及的檔案
