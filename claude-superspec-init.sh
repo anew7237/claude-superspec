@@ -147,8 +147,10 @@ elif [ -d "$TARGET_DIR/$SK_PROJECT/.git/" ] ; then
   # 不加 --force,讓檔案層級走 skip 分支(既有 CLAUDE.md 等不會被覆蓋)
   cd "$TARGET_DIR/$SK_PROJECT/"
   backup_project_file "$TARGET_DIR/$SK_PROJECT/" "CLAUDE.md"
+  NO_GIT_FLAG=""
+  [[ "$(printf '%s\nv0.10.0\n' "$SK_VERSION" | sort -V | head -1)" != "v0.10.0" ]] && NO_GIT_FLAG="--no-git"
   echo "y" | uvx --from "git+https://github.com/github/spec-kit.git@${SK_VERSION}" \
-    specify init --here --no-git --integration claude
+    specify init --here $NO_GIT_FLAG --integration claude
   echo "✅ '$SK_PROJECT' 初始化完成[專案目錄]($TARGET_DIR/$SK_PROJECT)"
   install_speckit_extension git
   commit_speckit_init
